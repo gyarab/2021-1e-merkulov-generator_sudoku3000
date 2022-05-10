@@ -1,0 +1,77 @@
+\documentclass{report}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{inconsolata}
+\usepackage{appendix}
+\usepackage[colorlinks=true, allcolors=black]{hyperref}
+
+
+
+\usepackage{color}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{pred}{rgb}{0.9,0,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\usepackage{listings}
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{pgreen},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pred},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$$},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\begin{document}
+
+\begin{center}
+    \huge \textbf{Gymnázium, Praha 6, Arabská 14}\\
+    \Large předmět Programování, vyučující Mgr. Jan Lána   
+\end{center}
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics{images/GyarabRP.png}
+    \label{fig:GyarabRP}
+\end{figure}
+
+\begin{center}
+    \huge \textbf{Ročníková práce\\
+    \Large Generátor Sudoku}\\
+    \Large \textbf{Ivan Merkulov 1.E}\\
+    Duben 2022
+\end{center}
+
+
+\chapter*{Čestné prohlášení}
+\large Prohlašuji, že jsem jediným autorem tohoto projektu, všechny citace jsou řádně označené a všechna použitá literatura a další zdroje jsou v práci uvedené. Tímto dle zákona 121/2000 Sb. (tzv. Autorský zákon) ve znění pozdějších předpisů uděluji bezúplatně škole Gymnázium, Praha 6, Arabská 14 oprávnění k výkonu práva na rozmnožování díla (§ 13) a práva na sdělování díla veřejnosti (§ 18) na dobu časově neomezenou a bez omezení územního rozsahu.\\
+\\
+V Praze dne  ..........\hspace{3cm}..........................\hspace{1cm}..............
+
+\chapter*{Abstrakt}
+Cílem projektu je vygenerovat hru sudoku podle všech jeho základních pravidel. To znamená, že musíme zaplnit sudoku čísly, tak že v každém řádku, sloupci a čtverci musí být každé číslo právě jednou. Program je schopen vygenerovat sudoku o velikosti mřížky 4x4, 6x6 a 9x9, dokáže určit 3 stupně obtížnosti hry sudoku (Lehká, Střední, Těžká) a potom hru sudoku graficky zobrazí.
+
+\chapter*{Abstract}
+The aim of the project is to generate a sudoku game according to all its basic rules. This means that we have to fill the sudoku with numbers, so that each row column and square must have each number exactly once. The program is able to generate sudoku game grid of 4x4, 6x6 and 9x9 sizes, it also can determine 3 levels of difficulty of the sudoku game (Easy, Medium, Hard) and then graphically display the sudoku game.
+
+
+\renewcommand{\contentsname}{Obsah}
+\tableofcontents
+
+\include{Uvod}
+\include{ReseniProblemu}
+\include{VymazáníČísel}
+\include{Zaver}
+\bibliographystyle{plain}
+\bibliography{ref}
+
+\end{document}

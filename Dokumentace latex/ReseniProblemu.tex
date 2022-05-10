@@ -1,0 +1,263 @@
+\chapter{Zaplnění mřížky čísly}
+Pro zaplnění mřížky všemi čísly dle pravidel sudoku, jsem použil dva způsoby.
+
+\section{Řešení 1}
+Řešení číslo 1 spočívá v tom, že budeme různě upravovat a přesouvat první řádek pole sudoku. Bude do sebe zahrnovat třídy SudokuSolutionGenerator a Permutation Generator. V této variantě dostaneme tzv. základní mřížku \ref{fig:ZakladniGrid}, ale nebude uplně přesná jako na místě, kde jsem se inspiroval \cite{Reseni1-1} \cite{Reseni1-2}, bude trochu vylepšená a vytvoří více variant řešení.
+
+\label{PermutationGenerator}\subsection{Permutation Generator}
+Abychom měli více variant řešení a naše základní mřížka nebyla stejnorodá, vytvoříme si třídu co dokáže vygenerovat náhodnou permutaci (řada čísel, kde se každé číslo nachází právě jednou) tu si potom vložíme do prvního řádku mřížky sudoku.\\
+\\
+\begin{lstlisting}
+public void generate9 () {
+        // Nastavim delku pole
+        this.permutation = new int [9];
+        int newNumber = 0;
+        // Prochazim kazde policko v poli
+        for(int i = 0; i < 9; i++) {
+            boolean notNewNumber = true;
+            // Dokud nemame vhodne cislo
+            while (notNewNumber) {
+                // Vytvarim nove cislo
+                newNumber = this.r.nextInt(9) + 1;
+                notNewNumber = false;
+                // Prochazim policka v poli ktera jsou pred policem kam dosazuji nove cislo (newNumber)
+                for(int j = 0; j < i; j++) {
+                    // Zkontroluje jestli se cisla v polickach nerovnaji novemu cislu (newNumber)
+                    if(newNumber == permutation[j])
+                        notNewNumber = true;
+                }
+            }
+            // Vyplnim policko vybranym cislem
+            this.permutation[i] = newNumber;
+        }
+    }
+\end{lstlisting}
+
+Tato metoda (generate9) vygeneruje náhodnou permutaci. Metoda prochází každé políčko v poli a postupně do každého políčka dosazuje náhodné číslo, které následně zkontroluje jestli se nerovná nějakému jinému číslu v poli. Pokud ano vygeneruje se jiné číslo. 
+
+\subsection{Sudoku Solution Generator}
+Proto abychom dostali základní mřížku potřebujeme nějakou řadu čísel, ze které budeme vycházet (pro toto se v programu používá Permutation Generator). V mřížce \ref{fig:ZakladniGrid} můžeme vidět na prvním řádku postupnou řadu čísel od 1-9. Tuto řadu si rozdělíme na 3 části podle čtverců 3x3 a tyto trojice čísel na dalších 2 řádcích prohodíme v pořadí viz \ref{fig:ZakladniGrid}. Poté co dojdeme k třetímu řádku, tak vezmeme 1 řádek vložíme ho na řádek číslo 4, ale při tom ho posuneme o jedno místo doleva. Opakujeme to samé až do konce pole sudoku. Aby třída dokázala takto přesouvat permutaci, tak k tomu používá 4 metody - copyArraySegment, rowPermutation, movePermutation a generate.\\
+
+\begin{figure}[h!]
+    \centering
+    \caption{Základní mřížka}
+    \includegraphics{images/ZakladniGrid.PNG}
+    \label{fig:ZakladniGrid}
+\end{figure}
+
+\subsubsection{Copy Array Segment}
+Metoda kopíruje části permutace a vloží zkopírovanou část na nové misto v poli.
+
+\begin{small}
+\begin{lstlisting}
+private void copyArraySegment(int resourceRow, int resourceColumn, int resultRow, int resultColumn, int segmentLength) {
+        for (int i = 0; i < segmentLength; i++) {
+            // Vlozim cast permutace na jine misto
+            this.matrix[resultRow][resultColumn + i] = this.matrix[resourceRow][resourceColumn + i];
+        }
+    }
+\end{lstlisting}
+\end{small}
+Metoda na vstupu dostane číslo řádku, ze kterého bude kopírovat část permutace (resourceRow), číslo sloupce, ze kterého bude kopírovat část permutace (resourceColumn), číslo řádku, do kterého bude vkládat zkopírovanou část permutace (resultRow), číslo sloupce, do kterého bude vkládat zkopírovanou část permutace (resultColumn) a délku části permutace, kterou bude kopírovat (segmentLength).
+
+\subsubsection{Row Permutation}
+Metoda pomocí metody Copy ArraySegment rovná za sebou v určitém pořadí zkopírované části o délce 3 políček permutace a pak je vkláda na určitý řádek podle pravidel sudoku\\
+Napriklad: 1 2 3 | 4 5 6 | 7 8 9\\
+. \hspace{1.6cm} 4 5 6 | 7 8 9 | 1 2 3 atd.
+
+\subsubsection{Move Permutation}
+Metoda na vstupu dostane číslo řádku, ze kterého bude přesouvat část permutace (resourceRow) a číslo řádku, do kterého bude část permutace přesouvat (resultRow). Metoda přesune permutaci kromě jejího prvního čísla z počátečního řádku (resultRow) na jiný řádek (resultRow) a potom dosadí první číslo na poslední pozici v řádku.\\
+Priklad:  1 2 3 | 4 5 6 | 7 8 9\\
+. \hspace{1.15cm}          2 3 4 | 5 6 7 | 8 9 1\\
+. \hspace{1.15cm}          3 4 5 | 6 7 8 | 9 1 2 atd.\\
+\\
+\begin{small}
+\begin{lstlisting}
+private void movePermutation(int resourceRow, int resultRow) {
+        for(int i = 0; i < matrix[resultRow].length - 1; i++) {
+            matrix[resultRow][i] = matrix[resourceRow][i + 1];
+        }
+        matrix[resultRow][8] = matrix[resourceRow][0];
+    }
+\end{lstlisting}
+\end{small}
+
+\subsubsection{Generate}
+Metoda s použitím předchozích metod movePermutation a rowPermutation vytvoří mřížku s řešením sudoku.
+
+\section{Řešení 2}
+Řešení číslo 2 dokáže vygenerovat všechny možné řešení sudoku narozdíl od řešení číslo 1, spočívá v tom, že do mřížky 9x9 dosadíme tři čtverce 3x3, ve kterých je každé číslo 1-9 právě jednou, po diagonále z levého horního rohu do pravého dolního rohu jako na obrázku \ref{fig:Sudoku3ctverce}. Dosadíme tyto čtverce po diagonále, protože čtverci nemají společný žádný řádek ani sloupec a nemusíme přemíslet o tom jak do čtverce dosadíme čísla 1-9. Potom dosadíme čísla do prázdných políček podle pravidel sudoku, tak že zkontrolujeme, že v řádku, ve sloupci a čtverci 3x3, do kterých dosazujeme číslo je každé číslo právě jednou. Pro získání náhodného řešení třídu SudokuRandomSolutionGenerator.Tímto řešením problému jsem se inspiroval zde \cite{Reseni2}.
+
+\begin{figure}[h!]
+    \centering
+    \caption{Sudoku 3 Čtverce}
+    \includegraphics{images/Sudoku3ctverce1.PNG}
+    \label{fig:Sudoku3ctverce}
+\end{figure}
+
+\subsection{Sudoku Random Solution Generator}
+Tato třída vytvoří všechna možná řešení sudoku. Využívá při tom již dříve zmíněnou třídu PermutationGenerator \ref{PermutationGenerator} a třídu CellCoordinates. Ještě využívá metody: generateSquare, checkRow, checkColumn, checkSquare, fillCell, fillSquares, fillCells a generate.
+
+\label{GenerateSquare}\subsubsection{Generate Square}
+Metoda vytvoří čtverec 3x3, tak že každé číslo v něm bude právě jednou. Metoda na vstupu dostane souřadnice levého horního rohu čtverce 3x3 ve čtverci 9x9, tam budeme chtít vytvořený čtverec 3x3 vložit.
+
+\begin{small}
+\begin{lstlisting}
+private void generateSquare(int SquareLeftCornerX, int SquareLeftCornerY) {
+        // Ziskam permutaci
+        pg.generate();
+        for(int i = 0; i < 3; i++) {
+            // Vkladam permutaci do ctverce 3x3 po radcich
+            this.matrix[SquareLeftCornerX][SquareLeftCornerY + i] = pg.permutation[0 + i];
+            this.matrix[SquareLeftCornerX + 1][SquareLeftCornerY + i] = pg.permutation[3 + i];
+            this.matrix[SquareLeftCornerX + 2][SquareLeftCornerY + i] = pg.permutation[6 + i];
+        }
+    }
+\end{lstlisting}
+\end{small}
+
+Metoda pomocí třídy PermutationGenerator \ref{PermutationGenerator} získám permutaci, kterou od levého horního rohu po řádcích vložím do čtverce 3x3.
+
+\label{CheckRow}\subsubsection{Check Row}
+Metoda na vstupu dostane číslo řádku a číslo, které chceme do nej dosadit. Metoda zkontroluje, jestli můžeme dosadit do řádku číslo, tak že porovná číslo na vstupu s čísly, které již v řádku jsou. Pokud najdeme nějaké číslo, kterému se dosazované číslo rovná, metoda vrátí false, jinak vrátí true.
+
+\begin{small}
+\begin{lstlisting}
+private boolean checkRow(int Number, int Row) {
+        // Prochazim cely radek
+        for (int i = 0; i < this.matrix.length; i++) {
+            if (Number == this.matrix[Row][i])
+                return false;
+        }
+        return true;
+    }
+\end{lstlisting}
+\end{small}
+
+\label{CheckColumn}\subsubsection{Check Column}
+Tato metoda funguje a vypadá skoro stejně jako metoda checkRow \ref{CheckRow}, jenom místo řádku (Row) je v této metodě sloupec (Column).
+
+\label{CheckSquare}\subsubsection{Check Square}
+Metoda na vstupu dostane souřadnice políčka a číslo, které chceme do nej dosadit. Metoda zkontroluje, jestli může dosadit do políčka číslo, tak že porovná číslo na vstupu s čísly, které již ve čtverci 3x3 jsou. Pokud najde nějaké, kterému se číslo rovná, vrátí false, jinak vrátí true.
+
+\begin{small}
+\begin{lstlisting}
+private boolean checkSquare(int Number, int X, int Y) {
+        // Vytvorim instanci policka se souradnicemi X, Y
+        CellCoordinates cell = new CellCoordinates(X, Y);
+        // Ziskam souradnice leveho horniho rohu ctverce 3x3
+        CellCoordinates squareLeftCorner = cell.mySquare();
+
+        // Od levehho horniho rohu prochazim ctverec 3x3 po radcich
+        for (int i = squareLeftCorner.Row; i < squareLeftCorner.Row + 3; i++) {
+            for (int j = squareLeftCorner.Column; j < squareLeftCorner.Column + 3; j++) {
+                if (Number == this.matrix[i][j])
+                    return false;
+            }
+        }
+        return true;
+    }
+\end{lstlisting}
+\end{small}
+Na vstupu metoda dostane souřadnice políčka, do kterého chceme dosadit číslo, ale my nevíme v jakém z 9 čtverců 3x3 se nachází naše políčko a také neznáme souřadnice levého horního rohu (to potřebujeme pro to abychom dokázali lehce zkontrolovat čtverec 3x3), ve kterém se nachazí políčko, které chceme zkontrolovat. Abychom zjistili souřadnice levého horního rohu čtverce, kde se nachází kontrolované políčko, využijeme třídy CellCoordinates \ref{CellCoordinates}.
+
+\label{FillCell}\subsubsection{Fill Cell}
+Metoda na vstupu dostane souřadnice prázdného políčka. Metoda vyplní prázdné políčko vhodným číslem dle pravidel sudoku: provedeme kontrolu řádku, sloupce a čtverce 3x3.
+
+\begin{small}
+\begin{lstlisting}
+private void fillCell(int cellRow, int cellColumn) {
+        int newNumber = 0;
+        boolean wrongNumber = true;
+
+        // Dokud nemame vhodne cislo a zaroven dosazovane cislo
+        // neni vetsi nez 9
+        while (wrongNumber && (newNumber < 9)) {
+            wrongNumber = false;
+            // Vygenerujeme nove cislo zvysenim o 1
+            newNumber = newNumber + 1;
+            // Zkontrolujeme, jestli cislo lze dosadit do radku,
+            // sloupce a ctverce 3x3
+            if (!(checkRow(newNumber, cellRow)) || (!checkColumn(newNumber, cellColumn)) || (!checkSquare(newNumber, cellRow, cellColumn)))  {
+               wrongNumber = true;
+            }
+        }
+        // Vyplnim policko vybranym cislem
+        this.matrix[cellRow][cellColumn] = newNumber;
+    }
+\end{lstlisting}
+\end{small}
+
+Metoda dosazuje do políčka postupně čísla od 1 do 9 (a zde nastal problém v programu \ref{Problem}) a pomocí metod checkRow \ref{CheckRow}, checkColumn \ref{CheckColumn} a checkSquare \ref{CheckSquare} zkontroluje jestli tam to číslo může vložit.
+
+\label{FillSquares}\subsubsection{Fill Squares}
+Metoda pomocí metody Generate Square \ref{GenerateSquare} vloží 3 čtverce 3x3 po diagonále jako na obrázku \ref{fig:Sudoku3ctverce}
+
+\label{FillCells}\subsubsection{Fill Cells}
+Metoda vyplni vsechna neobsazena policka spravnymi cisly dle pravidel sudoku.
+
+\begin{small}
+\begin{lstlisting}
+private void fillCells() {
+        // Prochazim cele pole 9x9 od leveho horniho rohu
+        for(int i = 0; i < this.matrix.length; i++) {
+            for(int j = 0; j < this.matrix[i].length; j++) {
+                if (this.matrix[i][j] == 0) {
+                    fillCell(i, j);
+                }
+            }
+        }
+    }
+\end{lstlisting}
+\end{small}
+
+Metoda projde celé pole 9x9 od levého horního rohu a když najde políčko, které se rovná 0, tak pomocí metody Fill Cell \ref{FillCell} políčko zaplní číslem 1-9.
+
+\subsubsection{Generate}
+Pomocí metod Fill Squares \ref{FillSquares} a Fill Cells \ref{FillCells} vyplní mřížku sudoku 9x9 řešením.
+
+\label{CellCoordinates}\subsection{Cell Coordinates}
+Třída dokáže zjistit v jakém čtverci 3x3 se nachází naše políčko a zjistí souřadnice levého horního rohu čtverce 3x3, ve kterém je naše políčko. Třída má jeden parametrický konstruktor, který dostane souřadnice našeho políčka.
+
+\subsubsection{My Square}
+Metoda vrací souřadnice levého horního rohu čtverce 3x3, ve kterém se nachazí naše políčko. Pokud si od bodu [0][0] pole 9x9 označíme každy třetí řádek a sloupec včetně řádku 0 a sloupce 0, tak průsečíky těchto řádku a sloupců budou horní levý rohy čtverce 3x3. 
+
+\begin{small}
+\begin{lstlisting}
+public CellCoordinates mySquare() {
+        int cornerColumn = 0;
+        int cornerRow = 0;
+
+        // Najdeme sloupec, ve kterem se nachazi
+        // levy horni roh ctverce
+        if (this.Column / 3 == 0) {
+            cornerColumn = 0;
+        }
+        else if (this.Column / 3 == 1) {
+            cornerColumn = 3;
+        }
+        else if (this.Column / 3 == 2) {
+            cornerColumn = 6;
+        }
+
+        //Najdeme radek, ve kterem se nachazi
+        //levy horni roh ctverce
+        if (this.Row / 3 == 0) {
+            cornerRow = 0;
+        }
+        else if (this.Row / 3 == 1) {
+            cornerRow = 3;
+        }
+        else if (this.Row / 3 == 2) {
+            cornerRow = 6;
+        }
+
+        return new CellCoordinates(cornerRow, cornerColumn);
+    }
+\end{lstlisting}
+\end{small}
+
+Metoda vydělí souřadnice políčka, aby zjistila, ve které ze 3 částí pole 9x9 se políčko nachází. Pokud se podíl bude rovnat 0 políčko se nachází v 1. části atd.
+
+\label{Problem}\section{Problem}
+Když metoda Fill Cell \ref{FillCell} zkouší dosadit čísla do políčka postupně od 1 do 9, tak někdy může nastat situace, že by bylo lepší dosadit do políčka větší číslo než menší, ale jelikož metoda zkouší dosazovat čísla od nejmenšího do největšího, tak pokud se do toho políčka menší číslo hodí, tak větší číslo nemůže být dosazeno dříve. Kvůli tomuto problému mi bohužel 2. řešení nefunguje.
